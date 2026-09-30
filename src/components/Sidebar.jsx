@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   UserRound,
+  Code2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -102,6 +103,18 @@ const Sidebar = () => {
             <div className="nav-item-content">
               <UserRound size={18} />
               <span>Audience</span>
+            </div>
+          </NavLink>
+        )}
+
+        {isAdmin && (
+          <NavLink
+            to="/integrations"
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <div className="nav-item-content">
+              <Code2 size={18} />
+              <span>Integrations</span>
             </div>
           </NavLink>
         )}

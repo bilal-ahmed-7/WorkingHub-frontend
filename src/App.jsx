@@ -13,6 +13,7 @@ import Workers from './pages/Workers';
 import Invitations from './pages/Invitations';
 import Settings from './pages/Settings';
 import Audience from './pages/Audience';
+import Integrations from './pages/Integrations';
 
 const App = () => {
   return (
@@ -50,6 +51,14 @@ const App = () => {
               element={
                 <ProtectedRoute requireAdmin>
                   <Invitations />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/integrations"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Integrations />
                 </ProtectedRoute>
               }
             />
