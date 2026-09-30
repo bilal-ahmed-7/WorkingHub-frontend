@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { AlertCircle, ClipboardList, Loader2, Search } from 'lucide-react';
 import { getAudienceApi } from '../api/audience';
 
+const displayLabel = (label) => label
+  .replace(/^(enter|select|choose|input)\s+(your\s+)?/i, '')
+  .trim();
+
 const Audience = () => {
   const [submissions, setSubmissions] = useState([]);
   const [search, setSearch] = useState('');
@@ -53,7 +57,7 @@ const Audience = () => {
                     <tr key={submission.id}>
                       <td style={{ fontWeight: 700, color: 'var(--slate-900)' }}>{submission.integration_name}</td>
                       <td style={{ color: 'var(--slate-600)', whiteSpace: 'nowrap' }}>{new Date(submission.submitted_at).toLocaleString()}</td>
-                      <td><div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>{Object.entries(submission.data).map(([key, value]) => <span key={key} style={{ padding: '5px 8px', background: 'var(--slate-100)', borderRadius: '5px', fontSize: '12px', color: 'var(--slate-700)' }}><strong>{key}:</strong> {Array.isArray(value) ? value.join(', ') : String(value || 'No')}</span>)}</div></td>
+                      <td><div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>{Object.entries(submission.data).map(([key, value]) => <span key={key} style={{ padding: '5px 8px', background: 'var(--slate-100)', borderRadius: '5px', fontSize: '12px', color: 'var(--slate-700)' }}><strong>{displayLabel(key)}:</strong> {Array.isArray(value) ? value.join(', ') : String(value || 'No')}</span>)}</div></td>
                     </tr>
                   ))}
                 </tbody>

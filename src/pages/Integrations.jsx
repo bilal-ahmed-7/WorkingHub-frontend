@@ -4,6 +4,7 @@ import {
   Check,
   ClipboardCopy,
   Code2,
+  Eye,
   GripVertical,
   Loader2,
   Pencil,
@@ -18,6 +19,7 @@ import {
   deleteIntegrationApi,
   getIntegrationsApi,
   updateIntegrationApi,
+  getIntegrationLogsApi,
 } from '../api/integrations';
 
 const fieldTypes = [
@@ -41,6 +43,10 @@ const newField = () => ({
 
 const blankForm = { name: '', is_active: true, fields: [newField()] };
 
+const displayLabel = (label) => label
+  .replace(/^(enter|select|choose|input)\s+(your\s+)?/i, '')
+  .trim();
+
 const toForm = (integration) => ({
   name: integration.name,
   is_active: integration.is_active,
@@ -63,6 +69,9 @@ const Integrations = () => {
   const [editingIntegration, setEditingIntegration] = useState(null);
   const [form, setForm] = useState(blankForm);
   const [copiedId, setCopiedId] = useState(null);
+  const [notice, setNotice] = useState('');
+  const [logs, setLogs] = useState(null);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const fetchIntegrations = async () => {
     try {
@@ -84,6 +93,7 @@ const Integrations = () => {
     setEditingIntegration(null);
     setForm({ ...blankForm, fields: [newField()] });
     setFieldErrors({});
+    setNotice('');
     setModalOpen(true);
   };
 
@@ -91,6 +101,7 @@ const Integrations = () => {
     setEditingIntegration(integration);
     setForm(toForm(integration));
     setFieldErrors({});
+    setNotice('');
     setModalOpen(true);
   };
 
@@ -129,6 +140,7 @@ const Integrations = () => {
         ? current.map((item) => item.id === saved.id ? saved : item)
         : [saved, ...current]);
       setModalOpen(false);
+      setNotice(`${saved.name} ${editingIntegration ? 'updated' : 'created'} successfully.`);
     } catch (err) {
       const responseData = err.response?.data;
       if (responseData && typeof responseData === 'object') setFieldErrors(responseData);
@@ -143,6 +155,7 @@ const Integrations = () => {
     try {
       await deleteIntegrationApi(integration.id);
       setIntegrations((current) => current.filter((item) => item.id !== integration.id));
+      setNotice(`${integration.name} was deleted successfully.`);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to delete integration.');
     }
@@ -152,8 +165,22 @@ const Integrations = () => {
     try {
       const saved = await updateIntegrationApi(integration.id, { is_active: !integration.is_active });
       setIntegrations((current) => current.map((item) => item.id === saved.id ? saved : item));
+      setNotice(`${saved.name} is now ${saved.is_active ? 'active' : 'inactive'}.`);
     } catch (err) {
       setError('Unable to update integration status.');
+    }
+  };
+
+  const openLogs = async (integration) => {
+    setLogsLoading(true);
+    setLogs({ integration: integration.name, total_success: 0, total_errors: 0, logs: [] });
+    try {
+      setLogs(await getIntegrationLogsApi(integration.id));
+    } catch (err) {
+      setError('Unable to load form logs.');
+      setLogs(null);
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -180,6 +207,7 @@ const Integrations = () => {
       </div>
 
       {error && <div className="alert alert-error"><AlertCircle size={18} /><div>{error}</div></div>}
+      {notice && <div className="alert alert-success"><Check size={18} /><div>{notice}</div></div>}
 
       <div className="card">
         <div className="card-header">
@@ -200,7 +228,7 @@ const Integrations = () => {
                       <td style={{ color: 'var(--slate-600)' }}>{integration.fields.length} {integration.fields.length === 1 ? 'field' : 'fields'}</td>
                       <td><span className={`badge ${integration.is_active ? 'badge-active' : 'badge-inactive'}`}>{integration.is_active ? 'Active' : 'Inactive'}</span></td>
                       <td><button className="btn btn-secondary btn-sm" onClick={() => copyFormUrl(integration)} title="Copy public form URL">{copiedId === integration.id ? <Check size={14} /> : <ClipboardCopy size={14} />}<span>{copiedId === integration.id ? 'Copied' : 'Copy link'}</span></button></td>
-                      <td style={{ textAlign: 'right' }}><div style={{ display: 'inline-flex', gap: '8px' }}><button className="btn btn-secondary btn-sm" onClick={() => toggleActive(integration)} title="Toggle active status"><ToggleLeft size={14} /><span>{integration.is_active ? 'Disable' : 'Enable'}</span></button><button className="btn btn-secondary btn-sm" onClick={() => openEdit(integration)}><Pencil size={14} /><span>Edit</span></button><button className="btn btn-danger btn-sm" onClick={() => handleDelete(integration)} title="Delete integration"><Trash2 size={14} /></button></div></td>
+                      <td style={{ textAlign: 'right' }}><div style={{ display: 'inline-flex', gap: '8px' }}><button className="btn btn-secondary btn-sm" onClick={() => openLogs(integration)} title="View form logs"><Eye size={14} /><span>Logs</span></button><button className="btn btn-secondary btn-sm" onClick={() => toggleActive(integration)} title="Toggle active status"><ToggleLeft size={14} /><span>{integration.is_active ? 'Disable' : 'Enable'}</span></button><button className="btn btn-secondary btn-sm" onClick={() => openEdit(integration)}><Pencil size={14} /><span>Edit</span></button><button className="btn btn-danger btn-sm" onClick={() => handleDelete(integration)} title="Delete integration"><Trash2 size={14} /></button></div></td>
                     </tr>
                   ))}
                 </tbody>
@@ -232,6 +260,13 @@ const Integrations = () => {
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}><button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</button><button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><Loader2 size={16} className="spin-animation" />Saving...</> : <><Check size={16} />Save integration</>}</button></div>
         </form>
+      </Modal>
+
+      <Modal isOpen={Boolean(logs)} onClose={() => setLogs(null)} title={`${logs?.integration || 'Form'} logs`} maxWidth="900px">
+        {logsLoading ? <div style={{ padding: '32px', textAlign: 'center' }}><Loader2 size={28} className="spin-animation" style={{ color: 'var(--primary-600)', margin: '0 auto' }} /></div> : <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}><div style={{ padding: '16px', background: 'var(--emerald-50)', borderRadius: '8px' }}><div style={{ fontSize: '12px', color: 'var(--emerald-700)', fontWeight: 700 }}>SUCCESSFUL SUBMISSIONS</div><strong style={{ display: 'block', fontSize: '28px', color: 'var(--emerald-700)' }}>{logs?.total_success}</strong></div><div style={{ padding: '16px', background: 'var(--rose-50)', borderRadius: '8px' }}><div style={{ fontSize: '12px', color: 'var(--rose-600)', fontWeight: 700 }}>ERRORS</div><strong style={{ display: 'block', fontSize: '28px', color: 'var(--rose-600)' }}>{logs?.total_errors}</strong></div></div>
+          {logs?.logs.length ? <div className="table-container"><table className="data-table"><thead><tr><th>Result</th><th>Email / identity</th><th>Message</th><th>Time</th></tr></thead><tbody>{logs.logs.map((log) => <tr key={log.id}><td><span className={`badge ${log.status === 'success' ? 'badge-active' : 'badge-inactive'}`}>{log.status === 'success' ? 'Success' : 'Error'}</span></td><td>{Object.entries(log.data).find(([key]) => key.toLowerCase().includes('email') || key.toLowerCase().includes('phone') || key.toLowerCase().includes('mobile'))?.[1] || 'Not provided'}</td><td style={{ color: log.status === 'error' ? 'var(--rose-600)' : 'var(--slate-600)' }}>{log.error_message || 'Response saved successfully.'}</td><td style={{ whiteSpace: 'nowrap', color: 'var(--slate-500)' }}>{new Date(log.submitted_at).toLocaleString()}</td></tr>)}</tbody></table></div> : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--slate-500)' }}>No attempts have been recorded for this form.</div>}
+        </>}
       </Modal>
     </div>
   );

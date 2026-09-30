@@ -29,3 +29,8 @@ export const submitIntegrationApi = async (publicId, data) => {
   const response = await apiClient.post(`/integrations/public/${publicId}/submit/`, data);
   return response.data;
 };
+
+export const getIntegrationLogsApi = async (id) => {
+  const response = await apiClient.get(`/integrations/${id}/logs/`);
+  return response.data;
+};
