@@ -71,6 +71,29 @@ body {
   line-height: 1.5;
 }
 
+.public-form-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 20px;
+  background: radial-gradient(circle at top right, #e0e7ff 0, transparent 36%), var(--slate-50);
+}
+
+.public-form-card {
+  width: min(100%, 620px);
+  padding: 36px;
+  background: #ffffff;
+  border: 1px solid var(--slate-200);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 600px) {
+  .public-form-shell { padding: 20px 12px; }
+  .public-form-card { padding: 24px 18px; }
+}
+
 /* Typography Helpers */
 h1, h2, h3, h4, h5, h6 {
   color: var(--slate-900);

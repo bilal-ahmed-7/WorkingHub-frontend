@@ -19,3 +19,13 @@ export const deleteIntegrationApi = async (id) => {
   const response = await apiClient.delete(`/integrations/${id}/`);
   return response.data;
 };
+
+export const getPublicIntegrationApi = async (publicId) => {
+  const response = await apiClient.get(`/integrations/public/${publicId}/`);
+  return response.data;
+};
+
+export const submitIntegrationApi = async (publicId, data) => {
+  const response = await apiClient.post(`/integrations/public/${publicId}/submit/`, data);
+  return response.data;
+};

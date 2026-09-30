@@ -14,6 +14,7 @@ import Invitations from './pages/Invitations';
 import Settings from './pages/Settings';
 import Audience from './pages/Audience';
 import Integrations from './pages/Integrations';
+import PublicIntegrationForm from './pages/PublicIntegrationForm';
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/accept-invite/:token" element={<AcceptInvite />} />
+          <Route path="/integrations/public/:publicId" element={<PublicIntegrationForm />} />
 
           {/* ── Root redirect ─────────────────────────── */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
