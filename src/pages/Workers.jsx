@@ -200,7 +200,7 @@ const Workers = () => {
                     <th>Role</th>
                     <th>Status</th>
                     <th>Enrolled Date</th>
-                    {isAdmin && <th style={{ textAlign: 'right' }}>Actions</th>}
+                    {isAdmin && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>

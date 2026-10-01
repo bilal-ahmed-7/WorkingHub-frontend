@@ -59,14 +59,25 @@ const Audience = () => {
             <div style={{ padding: '48px', textAlign: 'center' }}><Loader2 size={30} className="spin-animation" style={{ color: 'var(--primary-600)', margin: '0 auto' }} /></div>
           ) : submissions.length ? (
             <div className="table-container">
-              <table className="data-table">
+              <table className="data-table audience-table">
                 <thead><tr><th>Form</th><th>Submitted</th><th>Details</th></tr></thead>
                 <tbody>
                   {submissions.map((submission) => (
                     <tr key={submission.id}>
                       <td style={{ fontWeight: 700, color: 'var(--slate-900)' }}>{submission.integration_name}</td>
                       <td style={{ color: 'var(--slate-600)', whiteSpace: 'nowrap' }}>{new Date(submission.submitted_at).toLocaleString()}</td>
-                      <td><table className="record-details-table"><tbody>{Object.entries(submission.data).map(([key, value]) => <tr key={key}><td>{displayLabel(key)}</td><td>{Array.isArray(value) ? value.join(', ') : String(value ?? 'No value')}</td></tr>)}</tbody></table></td>
+                      <td>
+                        <div className="audience-details-grid">
+                          {Object.entries(submission.data).map(([key, value]) => (
+                            <div className="audience-detail-item" key={key}>
+                              <span className="audience-detail-label">{displayLabel(key)}</span>
+                              <span className="audience-detail-value">
+                                {Array.isArray(value) ? value.join(', ') : String(value ?? 'No value')}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

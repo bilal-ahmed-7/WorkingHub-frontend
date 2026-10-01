@@ -208,7 +208,7 @@ const Invitations = () => {
                     <th>Status</th>
                     <th>Dispatched Date</th>
                     <th>Expires At</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
