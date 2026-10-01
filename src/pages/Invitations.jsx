@@ -14,11 +14,15 @@ import {
   Link2,
 } from 'lucide-react';
 import { getInvitationsApi, sendInvitationApi, revokeInvitationApi } from '../api/invitations';
+import Pagination from '../components/Pagination';
 
 const Invitations = () => {
   const [searchParams] = useSearchParams();
   const showDispatch = searchParams.get('action') === 'invite';
   const [invitations, setInvitations] = useState([]);
+  const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -30,24 +34,36 @@ const Invitations = () => {
 
   // Copy state
   const [copiedToken, setCopiedToken] = useState('');
-  const pendingInvitations = invitations.filter((invitation) => !invitation.is_accepted && invitation.is_valid);
+  const pendingInvitations = invitations;
 
-  const fetchInvitations = async () => {
+  const fetchInvitations = async (
+    requestedPage = page,
+    requestedPageSize = pageSize,
+    isActive = () => true,
+  ) => {
     try {
       setLoading(true);
-      const data = await getInvitationsApi();
-      setInvitations(data);
+      const data = await getInvitationsApi({ page: requestedPage, page_size: requestedPageSize });
+      if (isActive()) {
+        setInvitations(data.results);
+        setCount(data.count);
+        setError('');
+      }
     } catch (err) {
-      console.error('Error fetching invitations:', err);
-      setError('Unable to load invitations.');
+      if (isActive()) {
+        console.error('Error fetching invitations:', err);
+        setError('Unable to load invitations.');
+      }
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!showDispatch) fetchInvitations();
-  }, [showDispatch]);
+    let active = true;
+    if (!showDispatch) fetchInvitations(page, pageSize, () => active);
+    return () => { active = false; };
+  }, [showDispatch, page, pageSize]);
 
   const handleSendInvite = async (e) => {
     e.preventDefault();
@@ -75,6 +91,9 @@ const Invitations = () => {
     try {
       await revokeInvitationApi(token);
       setInvitations((prev) => prev.filter((i) => i.token !== token));
+      setCount((current) => Math.max(0, current - 1));
+      if (invitations.length === 1 && page > 1) setPage((current) => current - 1);
+      else await fetchInvitations(page, pageSize);
     } catch (err) {
       console.error('Revoke error:', err);
       alert('Could not cancel invitation.');
@@ -171,7 +190,7 @@ const Invitations = () => {
         <div className="card-header">
           <h3 className="card-title">Pending Invitations</h3>
           <span style={{ fontSize: '13px', color: 'var(--slate-500)', fontWeight: 600 }}>
-            {pendingInvitations.length} pending
+            {count} pending
           </span>
         </div>
 
@@ -257,6 +276,15 @@ const Invitations = () => {
                 Sent invitations will appear here until accepted or expired.
               </p>
             </div>
+          )}
+          {!loading && (
+            <Pagination
+              count={count}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => { setPage(1); setPageSize(size); }}
+            />
           )}
         </div>
       </div>}

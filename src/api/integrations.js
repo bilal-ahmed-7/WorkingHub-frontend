@@ -1,7 +1,7 @@
 import apiClient from './client';
 
-export const getIntegrationsApi = async () => {
-  const response = await apiClient.get('/integrations/');
+export const getIntegrationsApi = async (params = {}) => {
+  const response = await apiClient.get('/integrations/', { params });
   return response.data;
 };
 
@@ -30,7 +30,7 @@ export const submitIntegrationApi = async (publicId, data) => {
   return response.data;
 };
 
-export const getIntegrationLogsApi = async (id) => {
-  const response = await apiClient.get(`/integrations/${id}/logs/`);
+export const getIntegrationLogsApi = async (id, params = {}) => {
+  const response = await apiClient.get(`/integrations/${id}/logs/`, { params });
   return response.data;
 };

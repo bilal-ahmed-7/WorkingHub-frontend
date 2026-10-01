@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import Pagination from '../components/Pagination';
 import {
   createIntegrationApi,
   deleteIntegrationApi,
@@ -61,6 +62,9 @@ const toForm = (integration) => ({
 
 const Integrations = () => {
   const [integrations, setIntegrations] = useState([]);
+  const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -71,23 +75,38 @@ const Integrations = () => {
   const [copiedId, setCopiedId] = useState(null);
   const [notice, setNotice] = useState('');
   const [logs, setLogs] = useState(null);
+  const [logsIntegration, setLogsIntegration] = useState(null);
+  const [logsPage, setLogsPage] = useState(1);
+  const [logsPageSize, setLogsPageSize] = useState(10);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState('');
+  const [selectedLog, setSelectedLog] = useState(null);
 
-  const fetchIntegrations = async () => {
+  const fetchIntegrations = async (
+    requestedPage = page,
+    requestedPageSize = pageSize,
+    isActive = () => true,
+  ) => {
     try {
       setLoading(true);
       setError('');
-      setIntegrations(await getIntegrationsApi());
+      const data = await getIntegrationsApi({ page: requestedPage, page_size: requestedPageSize });
+      if (isActive()) {
+        setIntegrations(data.results);
+        setCount(data.count);
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Unable to load integrations.');
+      if (isActive()) setError(err.response?.data?.detail || 'Unable to load integrations.');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchIntegrations();
-  }, []);
+    let active = true;
+    fetchIntegrations(page, pageSize, () => active);
+    return () => { active = false; };
+  }, [page, pageSize]);
 
   const openCreate = () => {
     setEditingIntegration(null);
@@ -139,6 +158,10 @@ const Integrations = () => {
       setIntegrations((current) => editingIntegration
         ? current.map((item) => item.id === saved.id ? saved : item)
         : [saved, ...current]);
+      if (!editingIntegration) {
+        if (page !== 1) setPage(1);
+        else await fetchIntegrations(1, pageSize);
+      }
       setModalOpen(false);
       setNotice(`${saved.name} ${editingIntegration ? 'updated' : 'created'} successfully.`);
     } catch (err) {
@@ -155,6 +178,12 @@ const Integrations = () => {
     try {
       await deleteIntegrationApi(integration.id);
       setIntegrations((current) => current.filter((item) => item.id !== integration.id));
+      setCount((current) => Math.max(0, current - 1));
+      if (integrations.length === 1 && page > 1) {
+        setPage((current) => current - 1);
+      } else {
+        await fetchIntegrations(page, pageSize);
+      }
       setNotice(`${integration.name} was deleted successfully.`);
     } catch (err) {
       setError(err.response?.data?.detail || 'Unable to delete integration.');
@@ -172,17 +201,34 @@ const Integrations = () => {
   };
 
   const openLogs = async (integration) => {
+    setLogsIntegration(integration);
+    setLogsPage(1);
+    setLogsError('');
+    setSelectedLog(null);
     setLogsLoading(true);
-    setLogs({ integration: integration.name, total_success: 0, total_errors: 0, logs: [] });
-    try {
-      setLogs(await getIntegrationLogsApi(integration.id));
-    } catch (err) {
-      setError('Unable to load form logs.');
-      setLogs(null);
-    } finally {
-      setLogsLoading(false);
-    }
+    setLogs(null);
   };
+
+  useEffect(() => {
+    if (!logsIntegration) return undefined;
+    let active = true;
+    setLogsLoading(true);
+    getIntegrationLogsApi(logsIntegration.id, { page: logsPage, page_size: logsPageSize })
+      .then((data) => { if (active) setLogs(data); })
+      .catch((err) => {
+        if (active) {
+          setLogsError(err.response?.data?.detail || 'Unable to load form logs.');
+          setLogs(null);
+        }
+      })
+      .finally(() => { if (active) setLogsLoading(false); });
+    return () => { active = false; };
+  }, [logsIntegration, logsPage, logsPageSize]);
+
+  const getLogIdentity = (log) => Object.entries(log.data || {}).find(([key]) => {
+    const normalized = key.toLowerCase();
+    return normalized.includes('email') || normalized.includes('phone') || normalized.includes('mobile') || normalized.endsWith(' id');
+  })?.[1] || 'Not provided';
 
   const copyFormUrl = async (integration) => {
     await navigator.clipboard.writeText(integration.form_url);
@@ -212,7 +258,7 @@ const Integrations = () => {
       <div className="card">
         <div className="card-header">
           <h3 className="card-title">Your integrations</h3>
-          <span style={{ fontSize: '13px', color: 'var(--slate-500)', fontWeight: 600 }}>{integrations.length} {integrations.length === 1 ? 'form' : 'forms'}</span>
+          <span style={{ fontSize: '13px', color: 'var(--slate-500)', fontWeight: 600 }}>{count} {count === 1 ? 'form' : 'forms'}</span>
         </div>
         <div className="card-body" style={{ padding: 0 }}>
           {loading ? (
@@ -236,6 +282,15 @@ const Integrations = () => {
             </div>
           ) : (
             <div style={{ padding: '56px 24px', textAlign: 'center', color: 'var(--slate-500)' }}><Code2 size={38} style={{ margin: '0 auto 12px', color: 'var(--slate-300)' }} /><h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--slate-700)' }}>No integrations yet</h3><p style={{ marginTop: '4px' }}>Create your first public form to start collecting information.</p></div>
+          )}
+          {!loading && (
+            <Pagination
+              count={count}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => { setPage(1); setPageSize(size); }}
+            />
           )}
         </div>
       </div>
@@ -262,11 +317,38 @@ const Integrations = () => {
         </form>
       </Modal>
 
-      <Modal isOpen={Boolean(logs)} onClose={() => setLogs(null)} title={`${logs?.integration || 'Form'} logs`} maxWidth="900px">
-        {logsLoading ? <div style={{ padding: '32px', textAlign: 'center' }}><Loader2 size={28} className="spin-animation" style={{ color: 'var(--primary-600)', margin: '0 auto' }} /></div> : <>
+      <Modal isOpen={Boolean(logsIntegration)} onClose={() => { setLogsIntegration(null); setLogs(null); }} title={`${logsIntegration?.name || 'Form'} logs`} maxWidth="900px">
+        {logsLoading ? <div style={{ padding: '32px', textAlign: 'center' }}><Loader2 size={28} className="spin-animation" style={{ color: 'var(--primary-600)', margin: '0 auto' }} /></div> : logsError ? <div className="alert alert-error"><AlertCircle size={18} /><div>{logsError}</div></div> : logs && <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}><div style={{ padding: '16px', background: 'var(--emerald-50)', borderRadius: '8px' }}><div style={{ fontSize: '12px', color: 'var(--emerald-700)', fontWeight: 700 }}>SUCCESSFUL SUBMISSIONS</div><strong style={{ display: 'block', fontSize: '28px', color: 'var(--emerald-700)' }}>{logs?.total_success}</strong></div><div style={{ padding: '16px', background: 'var(--rose-50)', borderRadius: '8px' }}><div style={{ fontSize: '12px', color: 'var(--rose-600)', fontWeight: 700 }}>ERRORS</div><strong style={{ display: 'block', fontSize: '28px', color: 'var(--rose-600)' }}>{logs?.total_errors}</strong></div></div>
-          {logs?.logs.length ? <div className="table-container"><table className="data-table"><thead><tr><th>Result</th><th>Email / identity</th><th>Message</th><th>Time</th></tr></thead><tbody>{logs.logs.map((log) => <tr key={log.id}><td><span className={`badge ${log.status === 'success' ? 'badge-active' : 'badge-inactive'}`}>{log.status === 'success' ? 'Success' : 'Error'}</span></td><td>{Object.entries(log.data).find(([key]) => key.toLowerCase().includes('email') || key.toLowerCase().includes('phone') || key.toLowerCase().includes('mobile'))?.[1] || 'Not provided'}</td><td style={{ color: log.status === 'error' ? 'var(--rose-600)' : 'var(--slate-600)' }}>{log.error_message || 'Response saved successfully.'}</td><td style={{ whiteSpace: 'nowrap', color: 'var(--slate-500)' }}>{new Date(log.submitted_at).toLocaleString()}</td></tr>)}</tbody></table></div> : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--slate-500)' }}>No attempts have been recorded for this form.</div>}
+          {logs?.results.length ? <div className="table-container"><table className="data-table"><thead><tr><th>Status</th><th>Email / identity</th><th>Response</th><th>Submitted</th><th style={{ textAlign: 'right' }}>View</th></tr></thead><tbody>{logs.results.map((log) => <tr key={log.id}><td><span className={`badge ${log.status === 'success' ? 'badge-active' : 'badge-inactive'}`}>{log.status === 'success' ? 'Success' : 'Error'}</span></td><td style={{ fontWeight: 600 }}>{getLogIdentity(log)}</td><td style={{ color: log.status === 'error' ? 'var(--rose-600)' : 'var(--slate-600)', maxWidth: '280px' }}>{log.error_message || 'Response saved successfully.'}</td><td style={{ whiteSpace: 'nowrap', color: 'var(--slate-500)' }}>{new Date(log.submitted_at).toLocaleString()}</td><td style={{ textAlign: 'right' }}><button className="btn btn-secondary btn-sm btn-icon" onClick={() => setSelectedLog(log)} title="View complete log"><Eye size={15} /><span>Details</span></button></td></tr>)}</tbody></table></div> : <div style={{ padding: '32px', textAlign: 'center', color: 'var(--slate-500)' }}>No attempts have been recorded for this form.</div>}
+          <Pagination
+            count={logs?.count || 0}
+            page={logsPage}
+            pageSize={logsPageSize}
+            onPageChange={setLogsPage}
+            onPageSizeChange={(size) => { setLogsPage(1); setLogsPageSize(size); }}
+          />
         </>}
+      </Modal>
+
+      <Modal isOpen={Boolean(selectedLog)} onClose={() => setSelectedLog(null)} title={`Submission log #${selectedLog?.id || ''}`} maxWidth="820px">
+        {selectedLog && <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--slate-200)' }}>
+            <div><div style={{ fontSize: '12px', color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }}>Submission result</div><div style={{ marginTop: '5px', fontWeight: 800, color: selectedLog.status === 'success' ? 'var(--emerald-700)' : 'var(--rose-600)' }}>{selectedLog.status === 'success' ? 'Successful response' : 'Rejected response'}</div></div>
+            <span className={`badge ${selectedLog.status === 'success' ? 'badge-active' : 'badge-inactive'}`}>HTTP {selectedLog.response_status}</span>
+          </div>
+          {selectedLog.error_message && <div className="alert alert-error"><AlertCircle size={18} /><div>{selectedLog.error_message}</div></div>}
+          <div className="log-detail-grid">
+            <div><span className="log-detail-label">Submitted</span><strong>{new Date(selectedLog.submitted_at).toLocaleString()}</strong></div>
+            <div><span className="log-detail-label">Identity</span><strong>{getLogIdentity(selectedLog)}</strong></div>
+            <div><span className="log-detail-label">Method</span><strong>{selectedLog.request_meta?.method || 'POST'}</strong></div>
+            <div><span className="log-detail-label">Content type</span><strong>{selectedLog.request_meta?.content_type || 'application/json'}</strong></div>
+            <div><span className="log-detail-label">IP address</span><strong>{selectedLog.request_meta?.ip_address || 'Unavailable'}</strong></div>
+            <div><span className="log-detail-label">Origin</span><strong>{selectedLog.request_meta?.origin || 'Unavailable'}</strong></div>
+          </div>
+          <div style={{ marginTop: '20px' }}><div className="log-detail-label">Form ID / token</div><code className="log-code-line">{selectedLog.form_token || logs?.form_token || selectedLog.form_id || logs?.form_id || 'Unavailable'}</code></div>
+          <div style={{ marginTop: '20px' }}><div className="log-detail-label">Payload</div><table className="record-details-table"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>{Object.entries(selectedLog.data || {}).map(([key, value]) => <tr key={key}><td>{displayLabel(key)}</td><td>{Array.isArray(value) ? value.join(', ') : String(value ?? 'No value')}</td></tr>)}</tbody></table></div>
+        </div>}
       </Modal>
     </div>
   );

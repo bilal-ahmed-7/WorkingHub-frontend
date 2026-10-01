@@ -15,8 +15,8 @@ export const getDashboardStatsApi = async () => {
   return response.data;
 };
 
-export const getCompanyWorkersApi = async () => {
-  const response = await apiClient.get('/companies/workers/');
+export const getCompanyWorkersApi = async (params = {}) => {
+  const response = await apiClient.get('/companies/workers/', { params });
   return response.data;
 };
 

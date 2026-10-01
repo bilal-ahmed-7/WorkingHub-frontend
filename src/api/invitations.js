@@ -1,7 +1,7 @@
 import apiClient from './client';
 
-export const getInvitationsApi = async () => {
-  const response = await apiClient.get('/invitations/');
+export const getInvitationsApi = async (params = {}) => {
+  const response = await apiClient.get('/invitations/', { params });
   return response.data;
 };
 

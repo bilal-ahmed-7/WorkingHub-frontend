@@ -15,10 +15,14 @@ import {
 } from '../api/companies';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
+import Pagination from '../components/Pagination';
 
 const Workers = () => {
   const { isAdmin } = useAuth();
   const [workers, setWorkers] = useState([]);
+  const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
@@ -29,11 +33,16 @@ const Workers = () => {
   const [deleting, setDeleting] = useState(false);
   const [statusUpdatingId, setStatusUpdatingId] = useState(null);
 
-  const fetchWorkers = async () => {
+  const fetchWorkers = async (requestedPage = page, requestedPageSize = pageSize, search = searchQuery) => {
     try {
       setLoading(true);
-      const data = await getCompanyWorkersApi();
-      setWorkers(data);
+      const data = await getCompanyWorkersApi({
+        page: requestedPage,
+        page_size: requestedPageSize,
+        search: search.trim(),
+      });
+      setWorkers(data.results);
+      setCount(data.count);
       setError('');
     } catch (err) {
       console.error('Error fetching workers:', err);
@@ -44,8 +53,31 @@ const Workers = () => {
   };
 
   useEffect(() => {
-    fetchWorkers();
-  }, []);
+    let active = true;
+    const loadWorkers = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const data = await getCompanyWorkersApi({
+          page,
+          page_size: pageSize,
+          search: searchQuery.trim(),
+        });
+        if (active) {
+          setWorkers(data.results);
+          setCount(data.count);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.response?.data?.detail || 'Unable to load company team list.');
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadWorkers();
+    return () => { active = false; };
+  }, [page, pageSize, searchQuery]);
 
   const confirmDeleteWorker = (worker) => {
     setSelectedWorker(worker);
@@ -58,8 +90,14 @@ const Workers = () => {
     try {
       await deleteCompanyWorkerApi(selectedWorker.id);
       setWorkers((prev) => prev.filter((w) => w.id !== selectedWorker.id));
+      setCount((current) => Math.max(0, current - 1));
       setDeleteModalOpen(false);
       setSelectedWorker(null);
+      if (workers.length === 1 && page > 1) {
+        setPage((current) => current - 1);
+      } else {
+        await fetchWorkers(page, pageSize);
+      }
     } catch (err) {
       console.error('Delete error:', err);
       alert('Could not remove worker. Please try again.');
@@ -87,16 +125,6 @@ const Workers = () => {
       setStatusUpdatingId(null);
     }
   };
-
-  const filteredWorkers = workers.filter((w) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      w.email.toLowerCase().includes(query) ||
-      (w.full_name && w.full_name.toLowerCase().includes(query)) ||
-      (w.first_name && w.first_name.toLowerCase().includes(query)) ||
-      (w.last_name && w.last_name.toLowerCase().includes(query))
-    );
-  });
 
   return (
     <div>
@@ -149,12 +177,12 @@ const Workers = () => {
               style={{ paddingLeft: '38px', height: '40px' }}
               placeholder="Search by name or email..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setPage(1); setSearchQuery(e.target.value); }}
             />
           </div>
 
           <div style={{ fontSize: '13px', color: 'var(--slate-500)', fontWeight: 600 }}>
-            {filteredWorkers.length} {filteredWorkers.length === 1 ? 'member' : 'members'} found
+            {count} {count === 1 ? 'member' : 'members'} found
           </div>
         </div>
 
@@ -163,7 +191,7 @@ const Workers = () => {
             <div style={{ padding: '48px', textAlign: 'center' }}>
               <Loader2 size={32} className="spin-animation" style={{ color: 'var(--primary-600)', margin: '0 auto' }} />
             </div>
-          ) : filteredWorkers.length > 0 ? (
+          ) : workers.length > 0 ? (
             <div className="table-container">
               <table className="data-table">
                 <thead>
@@ -176,7 +204,7 @@ const Workers = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredWorkers.map((worker) => (
+                  {workers.map((worker) => (
                     <tr key={worker.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -273,6 +301,15 @@ const Workers = () => {
                   : 'Accepted invitations will appear here as team members.'}
               </p>
             </div>
+          )}
+          {!loading && (
+            <Pagination
+              count={count}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(size) => { setPage(1); setPageSize(size); }}
+            />
           )}
         </div>
       </div>
