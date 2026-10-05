@@ -22,7 +22,9 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = '500px' }) => {
         <div className="card-header">
           <h3 className="card-title">{title}</h3>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close dialog"
             style={{
               background: 'none',
               border: 'none',

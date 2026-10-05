@@ -201,10 +201,11 @@ const AcceptInvite = () => {
 
         <form onSubmit={handleSubmit}>
           {/* First & Last Name */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="form-grid-two">
             <div className="form-group">
-              <label className="form-label">First Name</label>
+              <label className="form-label" htmlFor="invite-first-name">First Name</label>
               <input
+                id="invite-first-name"
                 type="text"
                 name="first_name"
                 required
@@ -222,8 +223,9 @@ const AcceptInvite = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Last Name</label>
+              <label className="form-label" htmlFor="invite-last-name">Last Name</label>
               <input
+                id="invite-last-name"
                 type="text"
                 name="last_name"
                 required
@@ -242,8 +244,9 @@ const AcceptInvite = () => {
 
           {/* New Password & Confirm Password */}
           <div className="form-group">
-            <label className="form-label">Set Your Secure Password</label>
+            <label className="form-label" htmlFor="invite-password">Set Your Secure Password</label>
             <input
+              id="invite-password"
               type="password"
               name="new_password"
               required
@@ -261,8 +264,9 @@ const AcceptInvite = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Confirm Password</label>
+            <label className="form-label" htmlFor="invite-confirm-password">Confirm Password</label>
             <input
+              id="invite-confirm-password"
               type="password"
               name="confirm_new_password"
               required

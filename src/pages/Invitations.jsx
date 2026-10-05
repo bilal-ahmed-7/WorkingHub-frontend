@@ -111,7 +111,7 @@ const Invitations = () => {
     <div>
       <div style={{ marginBottom: '28px' }}>
         <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--slate-900)' }}>
-          {showDispatch ? 'Send Dispatch' : 'Pending Invitations'}
+          {showDispatch ? 'Send Invitation' : 'Pending Invitations'}
         </h2>
         <p style={{ fontSize: '14px', color: 'var(--slate-500)', marginTop: '2px' }}>
           {showDispatch
@@ -131,7 +131,7 @@ const Invitations = () => {
         <div className="card-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <MailPlus size={18} style={{ color: 'var(--primary-600)' }} />
-            <h3 className="card-title">Send Worker Invitation</h3>
+            <h3 className="card-title">Invite a team member</h3>
           </div>
         </div>
         <div className="card-body">
@@ -204,7 +204,7 @@ const Invitations = () => {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Worker Email</th>
+                    <th>Team Member Email</th>
                     <th>Status</th>
                     <th>Dispatched Date</th>
                     <th>Expires At</th>

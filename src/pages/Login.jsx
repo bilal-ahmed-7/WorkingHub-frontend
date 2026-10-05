@@ -55,9 +55,10 @@ const Login = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email Address</label>
+            <label className="form-label" htmlFor="login-email">Email Address</label>
             <div style={{ position: 'relative' }}>
               <input
+                id="login-email"
                 type="email"
                 required
                 className="form-input"
@@ -70,9 +71,10 @@ const Login = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label" htmlFor="login-password">Password</label>
             <div style={{ position: 'relative' }}>
               <input
+                id="login-password"
                 type="password"
                 required
                 className="form-input"

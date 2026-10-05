@@ -32,17 +32,22 @@ const fieldTypes = [
   ['select', 'Select'],
   ['multi_select', 'Multiple select'],
   ['checkbox', 'Checkbox'],
+  ['address_autocomplete', 'Address autocomplete'],
 ];
 
-const newField = () => ({
+const newField = (fieldType = 'text', name = '') => ({
   key: `${Date.now()}-${Math.random()}`,
-  name: '',
-  field_type: 'text',
+  name,
+  field_type: fieldType,
   required: false,
   options: '',
 });
 
-const blankForm = { name: '', is_active: true, fields: [newField()] };
+const blankForm = {
+  name: '',
+  is_active: true,
+  fields: [newField()],
+};
 
 const displayLabel = (label) => label
   .replace(/^(enter|select|choose|input)\s+(your\s+)?/i, '')
@@ -51,7 +56,9 @@ const displayLabel = (label) => label
 const toForm = (integration) => ({
   name: integration.name,
   is_active: integration.is_active,
-  fields: integration.fields.map((field) => ({
+  fields: integration.fields.filter((field) => (
+    field.system_key === 'custom' || field.system_key === 'address_main'
+  )).map((field) => ({
     key: field.id,
     name: field.name,
     field_type: field.field_type,
@@ -129,6 +136,15 @@ const Integrations = () => {
       ...current,
       fields: current.fields.map((field) => field.key === key ? { ...field, ...changes } : field),
     }));
+  };
+
+  const changeFieldType = (field, fieldType) => {
+    updateField(field.key, {
+      field_type: fieldType,
+      name: fieldType === 'address_autocomplete' && !field.name ? 'Address' : field.name,
+      required: fieldType === 'address_autocomplete' ? true : field.required,
+      options: '',
+    });
   };
 
   const handleSubmit = async (event) => {
@@ -299,20 +315,28 @@ const Integrations = () => {
         <form onSubmit={handleSubmit}>
           <div className="form-group"><label className="form-label" htmlFor="integration-name">Integration name</label><input id="integration-name" className="form-input" required value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} />{renderError('name')}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '22px' }}><input id="integration-active" type="checkbox" checked={form.is_active} onChange={(event) => setForm((current) => ({ ...current, is_active: event.target.checked }))} /><label htmlFor="integration-active" style={{ fontSize: '13px', color: 'var(--slate-700)' }}>Make this form publicly available</label></div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}><div><h4 style={{ fontSize: '15px' }}>Form fields</h4><p style={{ fontSize: '12px', color: 'var(--slate-500)' }}>Fields are shown in the order listed below.</p></div><button type="button" className="btn btn-secondary btn-sm" onClick={() => setForm((current) => ({ ...current, fields: [...current.fields, newField()] }))}><Plus size={14} />Add field</button></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '10px' }}>
+            <div><h4 style={{ fontSize: '15px' }}>Form fields</h4><p style={{ fontSize: '12px', color: 'var(--slate-500)' }}>Add the fields people should complete in this form.</p></div>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setForm((current) => ({ ...current, fields: [...current.fields, newField()] }))}><Plus size={14} />Add field</button>
+            </div>
+          </div>
           {fieldErrors.fields && <div className="form-help" style={{ color: 'var(--rose-600)', marginBottom: '8px' }}>{Array.isArray(fieldErrors.fields) ? fieldErrors.fields[0] : fieldErrors.fields}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {form.fields.map((field, index) => (
-              <div key={field.key} style={{ display: 'grid', gridTemplateColumns: '20px minmax(150px, 1fr) 150px auto', gap: '8px', alignItems: 'center', padding: '10px', background: 'var(--slate-50)', border: '1px solid var(--slate-200)', borderRadius: '8px' }}>
+              <div key={field.key} className="integration-field-row">
                 <GripVertical size={16} style={{ color: 'var(--slate-400)' }} />
-                <input className="form-input" required placeholder={`Field ${index + 1} name`} value={field.name} onChange={(event) => updateField(field.key, { name: event.target.value })} />
-                <select className="form-input" value={field.field_type} onChange={(event) => updateField(field.key, { field_type: event.target.value, options: '' })}>{fieldTypes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', whiteSpace: 'nowrap' }}><input type="checkbox" checked={field.required} onChange={(event) => updateField(field.key, { required: event.target.checked })} />Required</label><button type="button" onClick={() => setForm((current) => ({ ...current, fields: current.fields.length === 1 ? current.fields : current.fields.filter((item) => item.key !== field.key) }))} style={{ background: 'none', border: 0, color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }} title="Remove field"><X size={17} /></button></div>
-                {['select', 'multi_select'].includes(field.field_type) && <input className="form-input" style={{ gridColumn: '2 / -1' }} required placeholder="Options, separated by commas" value={field.options} onChange={(event) => updateField(field.key, { options: event.target.value })} />}
+                <input className="form-input" required aria-label={`Field ${index + 1} name`} placeholder={`Field ${index + 1} name`} value={field.name} onChange={(event) => updateField(field.key, { name: event.target.value })} />
+                <select className="form-input integration-field-type" aria-label={`Field ${index + 1} type`} value={field.field_type} onChange={(event) => changeFieldType(field, event.target.value)}>{fieldTypes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                <div className="integration-field-controls">
+                  {field.field_type === 'address_autocomplete' ? <span style={{ fontSize: '12px', whiteSpace: 'nowrap', color: 'var(--slate-500)' }}>Required</span> : <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', whiteSpace: 'nowrap' }}><input type="checkbox" checked={field.required} onChange={(event) => updateField(field.key, { required: event.target.checked })} />Required</label>}
+                  <button type="button" onClick={() => setForm((current) => ({ ...current, fields: current.fields.length === 1 ? current.fields : current.fields.filter((item) => item.key !== field.key) }))} style={{ background: 'none', border: 0, color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }} title="Remove field"><X size={17} /></button>
+                </div>
+                {['select', 'multi_select'].includes(field.field_type) && <input className="form-input integration-field-options" required aria-label={`Field ${index + 1} options`} placeholder="Options, separated by commas" value={field.options} onChange={(event) => updateField(field.key, { options: event.target.value })} />}
               </div>
             ))}
           </div>
+          <p className="form-help" style={{ marginTop: '10px' }}>Address autocomplete adds protected Street, City, and ZIP Code fields automatically.</p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}><button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</button><button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><Loader2 size={16} className="spin-animation" />Saving...</> : <><Check size={16} />Save integration</>}</button></div>
         </form>
       </Modal>

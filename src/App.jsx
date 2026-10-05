@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
@@ -10,11 +10,20 @@ import Register from './pages/Register';
 import AcceptInvite from './pages/AcceptInvite';
 import Dashboard from './pages/Dashboard';
 import Workers from './pages/Workers';
-import Invitations from './pages/Invitations';
 import Settings from './pages/Settings';
 import Audience from './pages/Audience';
 import Integrations from './pages/Integrations';
 import PublicIntegrationForm from './pages/PublicIntegrationForm';
+
+const LegacyInvitationRedirect = () => {
+  const location = useLocation();
+  return (
+    <Navigate
+      to={location.search.includes('action=invite') ? '/workers?action=invite' : '/workers'}
+      replace
+    />
+  );
+};
 
 const App = () => {
   return (
@@ -52,7 +61,7 @@ const App = () => {
               path="/invitations"
               element={
                 <ProtectedRoute requireAdmin>
-                  <Invitations />
+                  <LegacyInvitationRedirect />
                 </ProtectedRoute>
               }
             />

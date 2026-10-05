@@ -1,104 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { AlertCircle, ClipboardList, Loader2, Search } from 'lucide-react';
-import { getAudienceApi } from '../api/audience';
+import { AlertCircle, ClipboardList, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { createAudienceRecordApi, deleteAudienceRecordApi, getAudienceApi, updateAudienceRecordApi } from '../api/audience';
+import { getIntegrationsApi } from '../api/integrations';
+import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 
-const displayLabel = (label) => label
-  .replace(/^(enter|select|choose|input)\s+(your\s+)?/i, '')
-  .trim();
+const emptyRecord = { integration_id: '', name: '', mobile: '', email: '', zipcode: '', city: '', street: '', state: '' };
+const columns = [['name', 'Name'], ['mobile', 'Mobile'], ['email', 'Email'], ['zipcode', 'ZIP Code'], ['city', 'City'], ['street', 'Street'], ['state', 'State']];
 
 const Audience = () => {
-  const [submissions, setSubmissions] = useState([]);
-  const [count, setCount] = useState(0);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError('');
-    getAudienceApi({ page, page_size: pageSize, search: search.trim() })
-      .then((data) => {
-        if (active) {
-          setSubmissions(data.results);
-          setCount(data.count);
-        }
-      })
-      .catch((err) => {
-        if (active) setError(err.response?.data?.detail || 'Unable to load submissions.');
-      })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [page, pageSize, search]);
-
-  return (
-    <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '22px', fontWeight: 800 }}>Audience</h2>
-        <p style={{ fontSize: '14px', color: 'var(--slate-500)', marginTop: '2px' }}>
-          Responses submitted through your integration forms.
-        </p>
-      </div>
-
-      {error && <div className="alert alert-error"><AlertCircle size={18} />{error}</div>}
-
-      <div className="card">
-        <div className="card-header">
-          <div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}>
-            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-400)' }} />
-            <input type="search" className="form-input" style={{ paddingLeft: '38px', height: '40px' }} placeholder="Search responses..." value={search} onChange={(event) => { setPage(1); setSearch(event.target.value); }} />
-          </div>
-          <span style={{ fontSize: '13px', color: 'var(--slate-500)', fontWeight: 600 }}>{count} responses</span>
-        </div>
-
-        <div className="card-body" style={{ padding: 0 }}>
-          {loading ? (
-            <div style={{ padding: '48px', textAlign: 'center' }}><Loader2 size={30} className="spin-animation" style={{ color: 'var(--primary-600)', margin: '0 auto' }} /></div>
-          ) : submissions.length ? (
-            <div className="table-container">
-              <table className="data-table audience-table">
-                <thead><tr><th>Form</th><th>Submitted</th><th>Details</th></tr></thead>
-                <tbody>
-                  {submissions.map((submission) => (
-                    <tr key={submission.id}>
-                      <td style={{ fontWeight: 700, color: 'var(--slate-900)' }}>{submission.integration_name}</td>
-                      <td style={{ color: 'var(--slate-600)', whiteSpace: 'nowrap' }}>{new Date(submission.submitted_at).toLocaleString()}</td>
-                      <td>
-                        <div className="audience-details-grid">
-                          {Object.entries(submission.data).map(([key, value]) => (
-                            <div className="audience-detail-item" key={key}>
-                              <span className="audience-detail-label">{displayLabel(key)}</span>
-                              <span className="audience-detail-value">
-                                {Array.isArray(value) ? value.join(', ') : String(value ?? 'No value')}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div style={{ padding: '56px 24px', textAlign: 'center', color: 'var(--slate-500)' }}><ClipboardList size={38} style={{ margin: '0 auto 12px', color: 'var(--slate-300)' }} /><h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--slate-700)' }}>{search ? 'No matching responses' : 'No form responses yet'}</h3></div>
-          )}
-          {!loading && (
-            <Pagination
-              count={count}
-              page={page}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={(size) => { setPage(1); setPageSize(size); }}
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  const [records, setRecords] = useState([]); const [integrations, setIntegrations] = useState([]); const [count, setCount] = useState(0); const [page, setPage] = useState(1); const [pageSize, setPageSize] = useState(10); const [search, setSearch] = useState(''); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [modalOpen, setModalOpen] = useState(false); const [saving, setSaving] = useState(false); const [selectedRecord, setSelectedRecord] = useState(null); const [form, setForm] = useState(emptyRecord);
+  const load = async (requestedPage = page) => { setLoading(true); setError(''); try { const data = await getAudienceApi({ page: requestedPage, page_size: pageSize, search: search.trim() }); setRecords(data.results); setCount(data.count); } catch (err) { setError(err.response?.data?.detail || 'Unable to load audience records.'); } finally { setLoading(false); } };
+  useEffect(() => { load(); }, [page, pageSize, search]);
+  const openModal = async (record = null) => { setSelectedRecord(record); setForm(record ? { ...emptyRecord, ...record, integration_id: record.integration_id || '' } : emptyRecord); setModalOpen(true); if (!integrations.length) { try { const data = await getIntegrationsApi({ page_size: 1000 }); setIntegrations(data.results); } catch { setError('Unable to load integrations.'); } } };
+  const save = async (event) => { event.preventDefault(); setSaving(true); setError(''); try { const payload = { ...form, integration_id: form.integration_id || null }; const saved = selectedRecord ? await updateAudienceRecordApi(selectedRecord.id, payload) : await createAudienceRecordApi(payload); setNotice(`Audience record ${selectedRecord ? 'updated' : 'created'}.`); setModalOpen(false); if (selectedRecord) setRecords((current) => current.map((item) => item.id === saved.id ? saved : item)); else { setPage(1); await load(1); } } catch (err) { const data = err.response?.data; setError(data && typeof data === 'object' ? Object.entries(data).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(' ') : value}`).join(' ') : 'Unable to save audience record.'); } finally { setSaving(false); } };
+  const remove = async (record) => { if (!window.confirm(`Delete ${record.name || record.email || 'this audience record'}?`)) return; try { await deleteAudienceRecordApi(record.id); setRecords((current) => current.filter((item) => item.id !== record.id)); setCount((current) => current - 1); setNotice('Audience record deleted.'); } catch (err) { setError(err.response?.data?.detail || 'Unable to delete audience record.'); } };
+  return <div><div style={{ marginBottom: '24px' }}><h2 style={{ fontSize: '22px', fontWeight: 800 }}>Audience</h2><p style={{ fontSize: '14px', color: 'var(--slate-500)', marginTop: '2px' }}>Your standardised audience records.</p></div>{error && <div className="alert alert-error"><AlertCircle size={18} />{error}</div>}{notice && <div className="alert alert-success">{notice}</div>}<div className="card"><div className="card-header"><div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}><Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-400)' }} /><input type="search" className="form-input" style={{ paddingLeft: '38px', height: '40px' }} placeholder="Search audience..." value={search} onChange={(event) => { setPage(1); setSearch(event.target.value); }} /></div><span style={{ fontSize: '13px', color: 'var(--slate-500)', fontWeight: 600 }}>{count} records</span><button type="button" className="btn btn-primary btn-sm" onClick={() => openModal()}><Plus size={16} /> Add audience</button></div><div className="card-body" style={{ padding: 0 }}>{loading ? <div style={{ padding: '48px', textAlign: 'center' }}><Loader2 size={30} className="spin-animation" /></div> : records.length ? <div className="table-container"><table className="data-table"><thead><tr><th>Form</th><th>Submitted</th>{columns.map(([, label]) => <th key={label}>{label}</th>)}<th>Actions</th></tr></thead><tbody>{records.map((record) => <tr key={record.id}><td>{record.integration_name || 'Manual'}</td><td style={{ whiteSpace: 'nowrap' }}>{new Date(record.submitted_at).toLocaleString()}</td>{columns.map(([key]) => <td key={key}>{record[key] || '—'}</td>)}<td><div className="table-actions"><button className="btn btn-secondary btn-sm" onClick={() => openModal(record)}><Pencil size={14} /> Edit</button><button className="btn btn-danger btn-sm" onClick={() => remove(record)}><Trash2 size={14} /> Delete</button></div></td></tr>)}</tbody></table></div> : <div style={{ padding: '56px 24px', textAlign: 'center', color: 'var(--slate-500)' }}><ClipboardList size={38} style={{ margin: '0 auto 12px' }} /><h3>{search ? 'No matching audience records' : 'No audience records yet'}</h3></div>} {!loading && <Pagination count={count} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={(size) => { setPage(1); setPageSize(size); }} />}</div></div><Modal isOpen={modalOpen} onClose={() => !saving && setModalOpen(false)} title={selectedRecord ? 'Edit audience record' : 'Add audience record'}><form onSubmit={save}><div className="form-group"><label className="form-label">Source form</label><select className="form-input" value={form.integration_id} onChange={(event) => setForm((current) => ({ ...current, integration_id: event.target.value }))}><option value="">Manual record</option>{integrations.map((integration) => <option key={integration.id} value={integration.id}>{integration.name}</option>)}</select></div>{columns.map(([key, label]) => <div className="form-group" key={key}><label className="form-label" htmlFor={`audience-${key}`}>{label}</label><input id={`audience-${key}`} className="form-input" type={key === 'email' ? 'email' : 'text'} value={form[key]} onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))} /></div>)}<div className="modal-actions"><button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</button><button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save record'}</button></div></form></Modal></div>;
 };
 
 export default Audience;

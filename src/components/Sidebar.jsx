@@ -1,32 +1,19 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
-  MailPlus,
   Building2,
   LogOut,
-  ChevronDown,
-  ChevronRight,
   UserRound,
   Code2,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({ mobileNavigationOpen }) => {
   const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // State for collapsible sub-menus
-  const [openSubMenus, setOpenSubMenus] = useState({
-    team: true,
-    invitations: true,
-  });
-
-  const toggleSubMenu = (key) => {
-    setOpenSubMenus((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -43,7 +30,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${mobileNavigationOpen ? ' sidebar-open' : ''}`}>
       {/* Brand Header */}
       <div className="sidebar-brand">
         <div className="sidebar-logo-icon">
@@ -55,7 +42,11 @@ const Sidebar = () => {
       </div>
 
       {/* Main Navigation Links */}
-      <nav className="sidebar-nav">
+      <nav
+        className="sidebar-nav"
+        id="primary-navigation"
+        aria-label="Main navigation"
+      >
         <div className="sidebar-section-title">Navigation</div>
 
         {/* Dashboard */}
@@ -69,31 +60,15 @@ const Sidebar = () => {
           </div>
         </NavLink>
 
-        {/* Workers / Team Management */}
-        <div>
-          <div
-            className={`nav-item ${location.pathname.startsWith('/workers') ? 'active' : ''}`}
-            onClick={() => toggleSubMenu('team')}
-          >
-            <div className="nav-item-content">
-              <Users size={18} />
-              <span>Workers & Team</span>
-            </div>
-            {openSubMenus.team ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        <NavLink
+          to="/workers"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <div className="nav-item-content">
+            <Users size={18} />
+            <span>Team Members</span>
           </div>
-
-          {openSubMenus.team && (
-            <div className="nav-sub-list">
-              <NavLink
-                to="/workers"
-                end
-                className={({ isActive }) => `nav-sub-item ${isActive ? 'active' : ''}`}
-              >
-                <span>&bull; All Members</span>
-              </NavLink>
-            </div>
-          )}
-        </div>
+        </NavLink>
 
         {isAdmin && (
           <NavLink
@@ -119,64 +94,33 @@ const Sidebar = () => {
           </NavLink>
         )}
 
-        {/* Invitations (Company Owner feature) */}
-        {isAdmin && (
-          <div>
-            <div
-              className={`nav-item ${location.pathname.startsWith('/invitations') ? 'active' : ''}`}
-              onClick={() => toggleSubMenu('invitations')}
-            >
-              <div className="nav-item-content">
-                <MailPlus size={18} />
-                <span>Invitations</span>
-              </div>
-              {openSubMenus.invitations ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </div>
-
-            {openSubMenus.invitations && (
-              <div className="nav-sub-list">
-                <NavLink
-                  to="/invitations"
-                  className={() => `nav-sub-item ${location.search !== '?action=invite' ? 'active' : ''}`}
-                >
-                  <span>&bull; Pending Invites</span>
-                </NavLink>
-                <NavLink
-                  to="/invitations?action=invite"
-                  className={() => `nav-sub-item ${location.search === '?action=invite' ? 'active' : ''}`}
-                >
-                  <span>&bull; Send Dispatch</span>
-                </NavLink>
-              </div>
-            )}
-          </div>
-        )}
-
-        <NavLink
-          to="/settings"
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-        >
-          <div className="nav-item-content">
-            <UserRound size={18} />
-            <span>Profile</span>
-          </div>
-        </NavLink>
       </nav>
 
       {/* Bottom of Sidebar: Profile Info & Direct Logout Button */}
       <div className="sidebar-footer">
-        <div className="user-profile-widget">
-          <div className="user-avatar">
-            {getInitials(user?.full_name || user?.first_name, user?.email)}
-          </div>
-          <div className="user-meta">
-            <div className="user-display-name">
-              {user?.full_name || user?.first_name || 'User'}
+        <div className="sidebar-profile-row">
+          <div className="user-profile-widget">
+            <div className="user-avatar">
+              {getInitials(user?.full_name || user?.first_name, user?.email)}
             </div>
-            <div className="user-email-text" title={user?.email}>
-              {user?.email}
+            <div className="user-meta">
+              <div className="user-display-name">
+                {user?.full_name || user?.first_name || 'User'}
+              </div>
+              <div className="user-email-text" title={user?.email}>
+                {user?.email}
+              </div>
             </div>
           </div>
+          <button
+            type="button"
+            className="sidebar-settings-button"
+            onClick={() => navigate('/settings')}
+            aria-label="Open settings"
+            title="Settings"
+          >
+            <Settings size={17} />
+          </button>
         </div>
 
         <button className="btn-logout" onClick={handleLogout} title="Log out of your session">

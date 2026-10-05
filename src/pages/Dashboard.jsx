@@ -48,12 +48,12 @@ const Dashboard = () => {
       {/* Welcome Banner */}
       <div
         style={{
-          background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
-          borderRadius: '16px',
-          padding: '28px 32px',
+          background: 'var(--primary-800)',
+          borderRadius: '12px',
+          padding: '24px',
           color: '#ffffff',
           marginBottom: '32px',
-          boxShadow: 'var(--shadow-md)',
+          boxShadow: 'var(--shadow-sm)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -78,12 +78,12 @@ const Dashboard = () => {
         {isAdmin && (
           <div style={{ display: 'flex', gap: '12px' }}>
             <Link
-              to="/invitations?action=invite"
+              to="/workers?action=invite"
               className="btn btn-primary"
               style={{ backgroundColor: '#ffffff', color: 'var(--primary-800)', border: 'none' }}
             >
               <MailPlus size={18} />
-              <span>Invite Worker</span>
+              <span>Invite Team Member</span>
             </Link>
             <Link
               to="/workers"
@@ -146,7 +146,7 @@ const Dashboard = () => {
             <div className="stat-content">
               <span className="stat-label">Your Role</span>
               <span style={{ fontSize: '20px', fontWeight: 800, color: 'var(--slate-800)', marginTop: '8px' }}>
-                Standard Worker
+                Team Member
               </span>
             </div>
             <div className="stat-icon-wrapper icon-emerald">
@@ -158,8 +158,8 @@ const Dashboard = () => {
 
       {/* Admin Quick View Lists */}
       {isAdmin && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '24px' }}>
-          {/* Recent Workers */}
+        <div className="dashboard-quick-view">
+          {/* Recent Team Members */}
           <div className="card">
             <div className="card-header">
               <h3 className="card-title">Recent Team Members</h3>
@@ -205,7 +205,7 @@ const Dashboard = () => {
                 </table>
               ) : (
                 <div style={{ padding: '32px', textAlign: 'center', color: 'var(--slate-500)', fontSize: '14px' }}>
-                  No workers have joined yet. Invite your first colleague!
+                  No team members have joined yet. Invite your first colleague!
                 </div>
               )}
             </div>
@@ -215,7 +215,7 @@ const Dashboard = () => {
           <div className="card">
             <div className="card-header">
               <h3 className="card-title">Pending Invitations</h3>
-              <Link to="/invitations" style={{ fontSize: '13px', color: 'var(--primary-600)', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Link               to="/workers" style={{ fontSize: '13px', color: 'var(--primary-600)', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span>Manage</span>
                 <ArrowRight size={14} />
               </Link>

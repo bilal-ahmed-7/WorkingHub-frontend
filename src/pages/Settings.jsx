@@ -67,7 +67,7 @@ const Settings = () => {
                 width: '52px',
                 height: '52px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
+                background: 'var(--primary-600)',
                 color: '#fff',
                 display: 'flex',
                 alignItems: 'center',
@@ -108,10 +108,11 @@ const Settings = () => {
           )}
 
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="form-grid-two">
               <div className="form-group">
-                <label className="form-label">First Name</label>
+                <label className="form-label" htmlFor="profile-first-name">First Name</label>
                 <input
+                  id="profile-first-name"
                   type="text"
                   required
                   className="form-input"
@@ -121,8 +122,9 @@ const Settings = () => {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Last Name</label>
+                <label className="form-label" htmlFor="profile-last-name">Last Name</label>
                 <input
+                  id="profile-last-name"
                   type="text"
                   required
                   className="form-input"
@@ -134,8 +136,9 @@ const Settings = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Email Address</label>
+              <label className="form-label" htmlFor="profile-email">Email Address</label>
               <input
+                id="profile-email"
                 type="email"
                 className="form-input"
                 value={user?.email || ''}

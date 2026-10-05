@@ -81,8 +81,9 @@ const Register = () => {
         <form onSubmit={handleSubmit}>
           {/* Organization Name */}
           <div className="form-group">
-            <label className="form-label">Company Name</label>
+            <label className="form-label" htmlFor="register-company-name">Company Name</label>
             <input
+              id="register-company-name"
               type="text"
               name="company_name"
               required
@@ -100,10 +101,11 @@ const Register = () => {
           </div>
 
           {/* Owner Full Name */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="form-grid-two">
             <div className="form-group">
-              <label className="form-label">First Name</label>
+              <label className="form-label" htmlFor="register-first-name">First Name</label>
               <input
+                id="register-first-name"
                 type="text"
                 name="first_name"
                 required
@@ -120,8 +122,9 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Last Name</label>
+              <label className="form-label" htmlFor="register-last-name">Last Name</label>
               <input
+                id="register-last-name"
                 type="text"
                 name="last_name"
                 required
@@ -140,8 +143,9 @@ const Register = () => {
 
           {/* Email */}
           <div className="form-group">
-            <label className="form-label">Work Email Address</label>
+            <label className="form-label" htmlFor="register-email">Work Email Address</label>
             <input
+              id="register-email"
               type="email"
               name="email"
               required
@@ -158,10 +162,11 @@ const Register = () => {
           </div>
 
           {/* Password & Confirm */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="form-grid-two">
             <div className="form-group">
-              <label className="form-label">Password</label>
+              <label className="form-label" htmlFor="register-password">Password</label>
               <input
+                id="register-password"
                 type="password"
                 name="password"
                 required
@@ -178,8 +183,9 @@ const Register = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Confirm Password</label>
+              <label className="form-label" htmlFor="register-confirm-password">Confirm Password</label>
               <input
+                id="register-confirm-password"
                 type="password"
                 name="confirm_password"
                 required

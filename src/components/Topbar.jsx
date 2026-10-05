@@ -1,16 +1,15 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { ShieldCheck, UserCheck } from 'lucide-react';
+import { Menu, ShieldCheck, UserCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const Topbar = () => {
+const Topbar = ({ mobileNavigationOpen, onMenuClick }) => {
   const { isAdmin } = useAuth();
   const location = useLocation();
 
   const getPageTitle = (pathname) => {
     if (pathname.startsWith('/dashboard')) return 'Executive Dashboard';
-    if (pathname.startsWith('/workers')) return 'Team & Workers';
-    if (pathname.startsWith('/invitations')) return 'Invitation Center';
+    if (pathname.startsWith('/workers')) return 'Team Members';
     if (pathname.startsWith('/settings')) return 'Workspace Settings';
     return 'Workspace';
   };
@@ -18,6 +17,16 @@ const Topbar = () => {
   return (
     <header className="topbar">
       <div className="topbar-left">
+        <button
+          className="mobile-menu-button"
+          type="button"
+          aria-label={mobileNavigationOpen ? 'Close navigation' : 'Open navigation'}
+          aria-controls="primary-navigation"
+          aria-expanded={mobileNavigationOpen}
+          onClick={onMenuClick}
+        >
+          <Menu size={20} />
+        </button>
         <h1 className="topbar-title">{getPageTitle(location.pathname)}</h1>
       </div>
 
@@ -28,7 +37,7 @@ const Topbar = () => {
           </span>
         ) : (
           <span className="badge badge-worker">
-            <UserCheck size={13} /> Worker
+            <UserCheck size={13} /> Team Member
           </span>
         )}
       </div>
