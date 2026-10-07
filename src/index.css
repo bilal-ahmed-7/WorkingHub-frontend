@@ -543,7 +543,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .integration-field-row {
   display: grid;
-  grid-template-columns: 20px minmax(150px, 1fr) 150px auto;
+  grid-template-columns: 20px minmax(0, 1fr) 170px 138px;
   gap: 8px;
   align-items: center;
   padding: 10px;
@@ -552,11 +552,54 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 8px;
 }
 
+.integration-field-row > .form-input {
+  min-width: 0;
+}
+
+.integration-field-options {
+  grid-column: 2 / -1;
+}
+
+.integration-field-type {
+  width: 100%;
+}
+
 .integration-field-controls {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
-  flex-wrap: wrap;
+  white-space: nowrap;
+}
+
+.integrations-table {
+  min-width: 880px;
+  table-layout: fixed;
+}
+
+.integrations-table th:nth-child(1) {
+  width: 32%;
+}
+
+.integrations-table th:nth-child(2) {
+  width: 14%;
+}
+
+.integrations-table th:nth-child(3) {
+  width: 18%;
+}
+
+.integrations-table th:nth-child(4) {
+  width: 36%;
+}
+
+.integrations-table td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.integration-public-link {
+  white-space: nowrap;
 }
 
 .metrics-grid {
@@ -1082,18 +1125,16 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .integration-field-row {
-    grid-template-columns: 20px minmax(0, 1fr);
+    grid-template-columns: 20px minmax(0, 1fr) minmax(0, 138px);
   }
 
-  .integration-field-row > .form-input:first-of-type,
-  .integration-field-type,
-  .integration-field-controls,
-  .integration-field-options {
-    grid-column: 2;
+  .integration-field-row > .form-input {
+    grid-column: 2 / -1;
   }
 
   .integration-field-controls {
-    justify-content: space-between;
+    grid-column: 2 / -1;
+    justify-content: flex-start;
   }
 }
 

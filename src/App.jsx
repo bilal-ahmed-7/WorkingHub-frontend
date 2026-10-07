@@ -37,7 +37,7 @@ const App = () => {
           <Route path="/integrations/public/:publicId" element={<PublicIntegrationForm />} />
 
           {/* ── Root redirect ─────────────────────────── */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
           {/* ── Protected Routes (inside sidebar layout) ─ */}
           <Route

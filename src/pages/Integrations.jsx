@@ -46,7 +46,11 @@ const newField = (fieldType = 'text', name = '') => ({
 const blankForm = {
   name: '',
   is_active: true,
-  fields: [newField()],
+  fields: [
+    { ...newField('email', 'Email'), is_identifier: true, required: true },
+    { ...newField('number', 'Phone number'), is_identifier: true, required: true },
+    newField(),
+  ],
 };
 
 const displayLabel = (label) => label
@@ -57,12 +61,13 @@ const toForm = (integration) => ({
   name: integration.name,
   is_active: integration.is_active,
   fields: integration.fields.filter((field) => (
-    field.system_key === 'custom' || field.system_key === 'address_main'
+    ['custom', 'address_main', 'email', 'phone'].includes(field.system_key)
   )).map((field) => ({
     key: field.id,
     name: field.name,
     field_type: field.field_type,
-    required: field.required,
+    required: field.is_identifier || field.required,
+    is_identifier: ['email', 'phone'].includes(field.system_key),
     options: (field.options || []).join(', '),
   })),
 });
@@ -117,7 +122,7 @@ const Integrations = () => {
 
   const openCreate = () => {
     setEditingIntegration(null);
-    setForm({ ...blankForm, fields: [newField()] });
+    setForm(blankForm);
     setFieldErrors({});
     setNotice('');
     setModalOpen(true);
@@ -281,15 +286,14 @@ const Integrations = () => {
             <div style={{ padding: '48px', textAlign: 'center' }}><Loader2 size={30} className="spin-animation" style={{ color: 'var(--primary-600)', margin: '0 auto' }} /></div>
           ) : integrations.length ? (
             <div className="table-container">
-              <table className="data-table">
-                <thead><tr><th>Name</th><th>Fields</th><th>Status</th><th>Public form</th><th>Actions</th></tr></thead>
+              <table className="data-table integrations-table">
+                <thead><tr><th>Name</th><th>Status</th><th>Public form</th><th>Actions</th></tr></thead>
                 <tbody>
                   {integrations.map((integration) => (
                     <tr key={integration.id}>
                       <td><div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'var(--primary-50)', color: 'var(--primary-600)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Code2 size={17} /></div><strong>{integration.name}</strong></div></td>
-                      <td style={{ color: 'var(--slate-600)' }}>{integration.fields.length} {integration.fields.length === 1 ? 'field' : 'fields'}</td>
                       <td><span className={`badge ${integration.is_active ? 'badge-active' : 'badge-inactive'}`}>{integration.is_active ? 'Active' : 'Inactive'}</span></td>
-                      <td><button className="btn btn-secondary btn-sm" onClick={() => copyFormUrl(integration)} title="Copy public form URL">{copiedId === integration.id ? <Check size={14} /> : <ClipboardCopy size={14} />}<span>{copiedId === integration.id ? 'Copied' : 'Copy link'}</span></button></td>
+                      <td className="integration-public-link"><button className="btn btn-secondary btn-sm" onClick={() => copyFormUrl(integration)} title="Copy public form URL">{copiedId === integration.id ? <Check size={14} /> : <ClipboardCopy size={14} />}<span>{copiedId === integration.id ? 'Copied' : 'Copy link'}</span></button></td>
                       <td style={{ textAlign: 'right' }}><div style={{ display: 'inline-flex', gap: '8px' }}><button className="btn btn-secondary btn-sm" onClick={() => openLogs(integration)} title="View form logs"><Eye size={14} /><span>Logs</span></button><button className="btn btn-secondary btn-sm" onClick={() => toggleActive(integration)} title="Toggle active status"><ToggleLeft size={14} /><span>{integration.is_active ? 'Disable' : 'Enable'}</span></button><button className="btn btn-secondary btn-sm" onClick={() => openEdit(integration)}><Pencil size={14} /><span>Edit</span></button><button className="btn btn-danger btn-sm" onClick={() => handleDelete(integration)} title="Delete integration"><Trash2 size={14} /></button></div></td>
                     </tr>
                   ))}
@@ -326,17 +330,17 @@ const Integrations = () => {
             {form.fields.map((field, index) => (
               <div key={field.key} className="integration-field-row">
                 <GripVertical size={16} style={{ color: 'var(--slate-400)' }} />
-                <input className="form-input" required aria-label={`Field ${index + 1} name`} placeholder={`Field ${index + 1} name`} value={field.name} onChange={(event) => updateField(field.key, { name: event.target.value })} />
-                <select className="form-input integration-field-type" aria-label={`Field ${index + 1} type`} value={field.field_type} onChange={(event) => changeFieldType(field, event.target.value)}>{fieldTypes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+                <input className="form-input" required aria-label={`Field ${index + 1} name`} placeholder={`Field ${index + 1} name`} value={field.name} readOnly={field.is_identifier} onChange={(event) => updateField(field.key, { name: event.target.value })} />
+                <select className="form-input integration-field-type" aria-label={`Field ${index + 1} type`} value={field.field_type} disabled={field.is_identifier} onChange={(event) => changeFieldType(field, event.target.value)}>{fieldTypes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
                 <div className="integration-field-controls">
-                  {field.field_type === 'address_autocomplete' ? <span style={{ fontSize: '12px', whiteSpace: 'nowrap', color: 'var(--slate-500)' }}>Required</span> : <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', whiteSpace: 'nowrap' }}><input type="checkbox" checked={field.required} onChange={(event) => updateField(field.key, { required: event.target.checked })} />Required</label>}
-                  <button type="button" onClick={() => setForm((current) => ({ ...current, fields: current.fields.length === 1 ? current.fields : current.fields.filter((item) => item.key !== field.key) }))} style={{ background: 'none', border: 0, color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }} title="Remove field"><X size={17} /></button>
+                  {field.is_identifier || field.field_type === 'address_autocomplete' ? <span style={{ fontSize: '12px', whiteSpace: 'nowrap', color: 'var(--slate-500)' }}>{field.is_identifier ? 'Always required' : 'Required'}</span> : <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', whiteSpace: 'nowrap' }}><input type="checkbox" checked={field.required} onChange={(event) => updateField(field.key, { required: event.target.checked })} />Required</label>}
+                  {!field.is_identifier && <button type="button" onClick={() => setForm((current) => ({ ...current, fields: current.fields.length === 1 ? current.fields : current.fields.filter((item) => item.key !== field.key) }))} style={{ background: 'none', border: 0, color: 'var(--slate-400)', cursor: 'pointer', padding: '4px' }} title="Remove field"><X size={17} /></button>}
                 </div>
                 {['select', 'multi_select'].includes(field.field_type) && <input className="form-input integration-field-options" required aria-label={`Field ${index + 1} options`} placeholder="Options, separated by commas" value={field.options} onChange={(event) => updateField(field.key, { options: event.target.value })} />}
               </div>
             ))}
           </div>
-          <p className="form-help" style={{ marginTop: '10px' }}>Address autocomplete adds protected Street, City, and ZIP Code fields automatically.</p>
+          <p className="form-help" style={{ marginTop: '10px' }}>Email and phone number are always required. Address autocomplete adds protected Street, City, and ZIP Code fields automatically.</p>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px' }}><button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</button><button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><Loader2 size={16} className="spin-animation" />Saving...</> : <><Check size={16} />Save integration</>}</button></div>
         </form>
       </Modal>
