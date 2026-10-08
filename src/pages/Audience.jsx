@@ -6,6 +6,14 @@ import Pagination from '../components/Pagination';
 
 const emptyRecord = { integration_id: '', name: '', mobile: '', email: '', zipcode: '', city: '', street: '', state: '' };
 const columns = [['name', 'Name'], ['mobile', 'Mobile'], ['email', 'Email'], ['zipcode', 'ZIP Code'], ['city', 'City'], ['street', 'Street'], ['state', 'State']];
+const usPhoneFormatHint = 'Use (XXX) XXX-XXXX, XXX-XXX-XXXX, or +1XXXXXXXXXX.';
+const formatUsPhone = (value) => {
+  let digits = String(value || '').replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('1')) digits = digits.slice(1);
+  return digits.length === 10
+    ? `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+    : value;
+};
 const sortOptions = [
   ['-updated_at', 'Newest first'],
   ['updated_at', 'Oldest first'],
@@ -54,7 +62,9 @@ const Audience = () => {
 
   const openModal = (record = null) => {
     setSelectedRecord(record);
-    setForm(record ? { ...emptyRecord, ...record, integration_id: record.integration_id || '' } : emptyRecord);
+    setForm(record
+      ? { ...emptyRecord, ...record, mobile: formatUsPhone(record.mobile), integration_id: record.integration_id || '' }
+      : emptyRecord);
     setModalError('');
     setModalOpen(true);
   };
@@ -152,7 +162,7 @@ const Audience = () => {
                   {records.map((record) => (
                     <tr key={record.id}>
                       <td style={{ whiteSpace: 'nowrap' }}>{new Date(record.submitted_at).toLocaleString()}</td>
-                      {columns.map(([key]) => <td key={key}>{record[key] || '—'}</td>)}
+                      {columns.map(([key]) => <td key={key}>{(key === 'mobile' ? formatUsPhone(record[key]) : record[key]) || '—'}</td>)}
                       <td>
                         <div className="table-actions">
                           <button className="btn btn-secondary btn-sm" onClick={() => openModal(record)}><Pencil size={14} /> Edit</button>
@@ -178,15 +188,20 @@ const Audience = () => {
           {modalError && <div className="alert alert-error"><AlertCircle size={18} />{modalError}</div>}
           {columns.map(([key, label]) => (
             <div className="form-group" key={key}>
-              <label className="form-label" htmlFor={`audience-${key}`}>{label}</label>
+              <label className="form-label" htmlFor={`audience-${key}`}>
+                {label}
+                {(key === 'mobile' || key === 'email') && <span aria-hidden="true" style={{ color: 'var(--rose-600)', marginLeft: '3px' }}>*</span>}
+              </label>
               <input
                 id={`audience-${key}`}
                 className="form-input"
-                type={key === 'email' ? 'email' : 'text'}
+                type={key === 'mobile' ? 'tel' : key === 'email' ? 'email' : 'text'}
                 required={key === 'mobile' || key === 'email'}
+                autoComplete={key === 'mobile' ? 'tel' : undefined}
                 value={form[key]}
                 onChange={(event) => setForm((current) => ({ ...current, [key]: event.target.value }))}
               />
+              {key === 'mobile' && <span className="form-help">{usPhoneFormatHint}</span>}
             </div>
           ))}
           <div className="modal-actions">
