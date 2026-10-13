@@ -8,6 +8,7 @@ import {
   UserRound,
   Code2,
   Settings,
+  CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -67,6 +68,16 @@ const Sidebar = ({ mobileNavigationOpen }) => {
           <div className="nav-item-content">
             <Users size={18} />
             <span>Team Members</span>
+          </div>
+        </NavLink>
+
+        <NavLink
+          to="/calendar"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <div className="nav-item-content">
+            <CalendarDays size={18} />
+            <span>Calendar</span>
           </div>
         </NavLink>
 
