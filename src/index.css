@@ -89,6 +89,708 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+.calendar-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 8px 0 32px;
+}
+
+.calendar-product-card {
+  position: relative;
+  padding: 34px 40px 38px;
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.calendar-back-link {
+  display: inline-flex;
+  margin: -5px 0 12px -6px;
+  color: var(--slate-600);
+}
+
+.calendar-product-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.calendly-mark {
+  flex: 0 0 104px;
+  width: 104px;
+  height: 104px;
+}
+
+.calendly-mark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.calendar-product-details h1 {
+  margin: 3px 0 2px;
+  color: var(--slate-900);
+  font-size: 25px;
+  line-height: 1.3;
+}
+
+.calendar-product-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 13px;
+  color: var(--slate-600);
+  font-size: 13px;
+}
+
+.calendar-product-meta span:first-child {
+  padding: 2px 8px;
+  border: 1px solid var(--slate-200);
+  border-radius: 999px;
+}
+
+.calendar-connect-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  color: #fff;
+  background: #006bff;
+  border: 0;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendar-connect-button:hover:not(:disabled) {
+  background: #0054cc;
+}
+
+.calendar-connect-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.calendar-status-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 7px;
+  color: var(--slate-500);
+  font-size: 13px;
+}
+
+.calendar-alert {
+  margin-top: 20px;
+}
+
+.calendar-product-description {
+  margin-top: 23px;
+  color: var(--slate-600);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.calendar-product-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 14px;
+}
+
+.calendar-product-info h2 {
+  margin-bottom: 5px;
+  color: var(--slate-900);
+  font-size: 17px;
+}
+
+.calendar-product-info p,
+.calendar-product-info a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--slate-600);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.calendar-product-info a {
+  color: #2457a7;
+}
+
+@media (max-width: 600px) {
+  .calendar-product-card {
+    padding: 24px 20px 28px;
+  }
+
+  .calendar-product-heading {
+    gap: 15px;
+  }
+
+  .calendly-mark {
+    flex-basis: 72px;
+    width: 72px;
+    height: 72px;
+  }
+
+  .calendar-product-details h1 {
+    font-size: 21px;
+  }
+
+  .calendar-product-info {
+    gap: 16px;
+  }
+}
+
+/* ==========================================
+   CALENDLY EVENT TYPE MANAGER
+   ========================================== */
+.calendar-header-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 28px;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.calendar-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.calendar-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-header-title h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--slate-900);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendar-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.calendar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.calendar-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 0;
+  overflow-x: auto;
+  border-bottom: 2px solid var(--slate-200);
+}
+
+.calendar-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 10px 15px;
+  color: var(--slate-600);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.calendar-tab-btn:hover,
+.calendar-tab-btn.active {
+  color: var(--primary-600);
+}
+
+.calendar-tab-btn.active {
+  border-bottom-color: var(--primary-600);
+}
+
+.calendar-manager {
+  max-width: 1100px;
+}
+
+.calendar-manager .calendar-back-link {
+  margin: 0;
+}
+
+.calendar-header-card .calendly-mark {
+  flex-basis: 42px;
+  width: 42px;
+  height: 42px;
+}
+
+.calendar-manager-account {
+  color: var(--slate-500);
+  font-size: 13px;
+}
+
+.calendar-disconnect-button {
+  color: var(--rose-600);
+}
+
+.calendar-manager-alert {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 0;
+}
+
+.calendar-manager-alert button {
+  display: inline-flex;
+  padding: 3px;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.calendar-manager-panel {
+  margin-top: 20px;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-manager-toolbar,
+.calendar-manager-filters,
+.calendar-manager-filter-buttons,
+.calendar-manager-card-top,
+.calendar-manager-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.calendar-manager-toolbar {
+  margin-bottom: 20px;
+}
+
+.calendar-manager-toolbar h2 {
+  color: var(--slate-900);
+  font-size: 18px;
+}
+
+.calendar-manager-toolbar p {
+  margin-top: 3px;
+  color: var(--slate-500);
+  font-size: 13px;
+}
+
+.calendar-manager-toolbar .btn,
+.calendar-manager-card-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.calendar-manager-filters {
+  margin-bottom: 18px;
+}
+
+.calendar-manager-filter-buttons {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.calendar-manager-filter-buttons button {
+  padding: 7px 11px;
+  color: var(--slate-600);
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.calendar-manager-filter-buttons button.active {
+  color: var(--primary-700);
+  background: var(--primary-50);
+  border-color: var(--primary-200);
+}
+
+.calendar-manager-filters input {
+  width: min(260px, 100%);
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--slate-300);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.calendar-manager-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.calendar-manager-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 17px;
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 10px;
+}
+
+.calendar-manager-card-top {
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.calendar-manager-state,
+.calendar-manager-type {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.calendar-manager-state.is-active {
+  color: var(--emerald-700);
+  background: var(--emerald-50);
+}
+
+.calendar-manager-state.is-inactive {
+  color: var(--slate-600);
+  background: var(--slate-100);
+}
+
+.calendar-manager-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--slate-600);
+  background: var(--slate-100);
+  text-transform: capitalize;
+}
+
+.calendar-manager-card h3 {
+  margin: 12px 0 5px;
+  color: var(--slate-900);
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.calendar-manager-description {
+  min-height: 38px;
+  color: var(--slate-500);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.calendar-manager-details {
+  display: grid;
+  gap: 8px;
+  margin: 15px 0;
+}
+
+.calendar-manager-details > div {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  font-size: 12px;
+}
+
+.calendar-manager-details dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--slate-500);
+}
+
+.calendar-manager-details dd {
+  color: var(--slate-700);
+  overflow-wrap: anywhere;
+}
+
+.calendar-manager-limitation {
+  margin: 0 0 12px;
+  color: var(--amber-600);
+  font-size: 11px;
+}
+
+.calendar-manager-card-actions {
+  justify-content: flex-start;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--slate-100);
+}
+
+.calendar-manager-card-actions .btn {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.calendar-manager-book-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.calendar-manager-book-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.calendar-scheduled-list {
+  display: grid;
+  gap: 10px;
+}
+
+.calendar-scheduled-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px;
+  border: 1px solid var(--slate-200);
+  border-radius: 9px;
+}
+
+.calendar-scheduled-card h3 {
+  margin: 7px 0 3px;
+  color: var(--slate-900);
+  font-size: 14px;
+}
+
+.calendar-scheduled-card p {
+  margin-top: 3px;
+  color: var(--slate-600);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.calendar-manager-label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 18px;
+  color: var(--slate-700);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.calendar-manager-label textarea {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--slate-300);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.btn-danger-outline {
+  color: var(--rose-600);
+  background: #fff;
+  border: 1px solid #fecdd3;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: var(--rose-50);
+}
+
+.calendar-manager-card-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.calendar-manager-empty {
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 25px;
+  color: var(--slate-500);
+  text-align: center;
+}
+
+.calendar-manager-empty h3 {
+  color: var(--slate-800);
+  font-size: 15px;
+}
+
+.calendar-manager-empty p {
+  font-size: 13px;
+}
+
+.calendar-manager-modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 20px;
+  background: rgb(15 23 42 / 55%);
+}
+
+.calendar-manager-modal {
+  width: min(100%, 560px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-xl);
+}
+
+.calendar-manager-modal-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.calendar-manager-modal-heading h2 {
+  color: var(--slate-900);
+  font-size: 19px;
+}
+
+.calendar-manager-modal-heading p {
+  margin-top: 3px;
+  color: var(--slate-500);
+  font-size: 13px;
+}
+
+.calendar-manager-modal-heading > button {
+  display: inline-flex;
+  padding: 5px;
+  color: var(--slate-500);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.calendar-manager-modal form,
+.calendar-manager-modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.calendar-manager-modal form {
+  gap: 14px;
+}
+
+.calendar-manager-modal label {
+  color: var(--slate-700);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.calendar-manager-modal input,
+.calendar-manager-modal select,
+.calendar-manager-modal textarea {
+  width: 100%;
+  padding: 9px 10px;
+  color: var(--slate-800);
+  background: #fff;
+  border: 1px solid var(--slate-300);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.calendar-manager-modal input:read-only {
+  background: var(--slate-50);
+}
+
+.calendar-manager-modal label small {
+  color: var(--slate-500);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.calendar-manager-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+@media (max-width: 680px) {
+  .calendar-manager-panel {
+    padding: 17px;
+  }
+
+  .calendar-manager-toolbar,
+  .calendar-manager-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .calendar-manager-filters input {
+    width: 100%;
+  }
+
+  .calendar-header-left {
+    align-items: flex-start;
+  }
+
+  .calendar-header-title h1 {
+    flex-wrap: wrap;
+    font-size: 19px;
+  }
+}
+
 .form-input:disabled {
   color: var(--slate-600);
   background: var(--slate-100);

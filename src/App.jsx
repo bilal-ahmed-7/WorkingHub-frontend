@@ -13,6 +13,7 @@ import Workers from './pages/Workers';
 import Settings from './pages/Settings';
 import Audience from './pages/Audience';
 import Integrations from './pages/Integrations';
+import Calendar from './pages/Calendar';
 import PublicIntegrationForm from './pages/PublicIntegrationForm';
 
 const LegacyInvitationRedirect = () => {
@@ -48,6 +49,7 @@ const App = () => {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/calendar" element={<Calendar />} />
             <Route path="/workers" element={<Workers />} />
             <Route
               path="/audience"

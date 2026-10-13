@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const { user, isAdmin } = useAuth();
+  const connectionStatus = new URLSearchParams(window.location.search);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,6 +46,19 @@ const Dashboard = () => {
 
   return (
     <div>
+      {connectionStatus.get('connected') === 'true' && (
+        <div className="alert alert-success" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>Calendly has been connected successfully.</span>
+          <Link to="/calendar" style={{ fontWeight: 600, color: 'inherit', textDecoration: 'underline' }}>
+            Open Calendar & Scheduling &rarr;
+          </Link>
+        </div>
+      )}
+      {connectionStatus.get('connected') === 'false' && (
+        <div className="alert alert-error" style={{ marginBottom: '20px' }}>
+          {connectionStatus.get('error') || 'Calendly could not be connected.'}
+        </div>
+      )}
       {/* Welcome Banner */}
       <div
         style={{
